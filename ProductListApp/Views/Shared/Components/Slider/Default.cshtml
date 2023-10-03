@@ -1,0 +1,64 @@
+﻿@model List<ProductListApp.Models.Slider>
+
+@if (!Model.Any())
+{
+    // Veritabanında slider yoksa örnek bir slider
+    var exampleSlider = new ProductListApp.Models.Slider
+                {
+                    Description = "Örnek Slider",
+                    ImageURL = "/SiteLayout/img/slides/1.jpg", // Örnek bir resim yolu
+                    Slug = "/Home/Index"
+                };
+    var exampleSlider2 = new ProductListApp.Models.Slider
+                {
+                    Description = "Örnek Slider2",
+                    ImageURL = "/SiteLayout/img/slides/2.jpg", // Örnek bir resim yolu
+                    Slug = "/Home/Index"
+                };
+
+    var exampleSliders = new List<ProductListApp.Models.Slider> { exampleSlider, exampleSlider2 };
+
+    <div id="main-slider" class="flexslider">
+        <ul class="slides">
+            @foreach (var item in exampleSliders)
+            {
+                string trimmedDescription = item.Description.Length > 200 ? item.Description.Substring(0, 200) + "..." : item.Description;
+                <li>
+                    <a href="@item.Slug">
+                        <img src="@Url.Content(@item.ImageURL)" height="600" width="100" style="object-fit:contain;" />
+                    </a>
+                    <div class="flex-caption">
+
+                        <p>@Html.Raw(trimmedDescription)</p>
+                        <a href="@item.Slug" name="name" class="btn btn-theme">Read More</a>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+
+
+}
+else
+{
+    <div id="main-slider" class="flexslider">
+    <ul class="slides">
+        @foreach (var item in Model)
+        {
+            string trimmedDescription = item.Description.Length > 200 ? item.Description.Substring(0, 200) + "..." : item.Description;
+            <li>
+                <a href="@item.Slug">
+                    <img src="@Url.Content(@item.ImageURL)" height="600" width="100" style="object-fit:contain;" />
+                </a>
+                <div class="flex-caption">
+
+                    <p>@Html.Raw(trimmedDescription)</p>
+                    <a href="@item.Slug" name="name" class="btn btn-theme">Read More</a>
+                </div>
+            </li>
+        }
+    </ul>
+</div>
+}
+
+

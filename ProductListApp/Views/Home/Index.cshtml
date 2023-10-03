@@ -1,0 +1,49 @@
+﻿
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<section id="inner-headline">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <ul class="breadcrumb">
+                    <li><a href="/Home/Index"><i class="fa fa-home"></i></a><i class="icon-angle-right"></i></li>
+                    <li class="active">Home</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="featured">
+    <!-- start slider -->
+    <div class="container">
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+@(await Component.InvokeAsync("Slider"))
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+@Html.Raw(ViewBag.HomePageDescription)
+
+<br />
+<br />
+    </div>
+
+</section>
