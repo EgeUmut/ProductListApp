@@ -13,5 +13,6 @@
         public DateTime? CreateDate { get; set; }
         public DateTime? ShoppingStartDate { get; set; }
         public DateTime? ShoppingEndDate { get; set; }
+        public List<Cart>? Carts { get; set; }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProductListApp.Context;
 
@@ -11,9 +12,11 @@ using ProductListApp.Context;
 namespace ProductListApp.Migrations
 {
     [DbContext(typeof(ListAppContext))]
-    partial class ListAppContextModelSnapshot : ModelSnapshot
+    [Migration("20231003224119_on")]
+    partial class on
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,35 +40,6 @@ namespace ProductListApp.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AboutUs");
-                });
-
-            modelBuilder.Entity("ProductListApp.Models.Cart", b =>
-                {
-                    b.Property<int>("id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ItemCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ShoppingListId")
-                        .HasColumnType("int");
-
-                    b.HasKey("id");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("ShoppingListId");
-
-                    b.ToTable("Carts");
                 });
 
             modelBuilder.Entity("ProductListApp.Models.Category", b =>
@@ -191,6 +165,9 @@ namespace ProductListApp.Migrations
                     b.Property<string>("ImageURL")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("ItemCount")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -311,26 +288,7 @@ namespace ProductListApp.Migrations
 
                     b.HasIndex("shoppingListsid");
 
-                    b.ToTable("ProductShoppingList", (string)null);
-                });
-
-            modelBuilder.Entity("ProductListApp.Models.Cart", b =>
-                {
-                    b.HasOne("ProductListApp.Models.Product", "product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProductListApp.Models.ShoppingList", "shoppingList")
-                        .WithMany("Carts")
-                        .HasForeignKey("ShoppingListId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("product");
-
-                    b.Navigation("shoppingList");
+                    b.ToTable("ProductShoppingList");
                 });
 
             modelBuilder.Entity("ProductListApp.Models.Comment", b =>
@@ -385,11 +343,6 @@ namespace ProductListApp.Migrations
                         .HasForeignKey("shoppingListsid")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("ProductListApp.Models.ShoppingList", b =>
-                {
-                    b.Navigation("Carts");
                 });
 
             modelBuilder.Entity("ProductListApp.Models.User", b =>

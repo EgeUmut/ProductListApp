@@ -4,6 +4,13 @@
     ViewData["Title"] = "CreateShoppingList";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<script>
+        $(document).ready( function () {
+            $.noConflict();
+        $('#myTable').DataTable();
+    } );
+
+</script>
 
 <section id="inner-headline">
     <div class="container">
@@ -25,7 +32,7 @@
         <h1>CreateShoppingList</h1>
 
         <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-12">
                 <form asp-action="CreateShoppingList">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -40,6 +47,87 @@
                         <span asp-validation-for="Description" class="text-danger"></span>
                     </div>
 
+
+                                        <h2>Products</h2>
+                    <table id="myTable" class="table table-striped">
+                    <thead>
+                    <tr>
+
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Check</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var product in Model.Products)
+                    {
+
+                    <tr>
+                    <td>
+                    <img src="@Url.Content(product.ImageURL)" width="100" height="100" />
+                    </td>
+                    <td>
+                    @product.Name
+                    </td>
+                    <td>
+                        @product.Category.Name
+                    </td>
+
+
+                    <td class="form-check">
+                    <input type="checkbox" id="@($"Product-{product.id}")" name="SelectedProducts" value="@product.id" />
+                    <label for="@($"Product-{product.id}")">@product.Name</label>
+                    </td>
+                    </tr>
+
+                    }
+                    </tbody>
+                    </table>
+
+                    @*<h2>Products</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th hidden>id</th>
+                                <th>Image</th>
+                                <th>Name</th>
+                                <td>Category</td>
+                                <th>Description</th>
+                                <th>ItemCount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < Model.Products.Count; i++)
+                            {
+                                <tr>
+                                    <td hidden>
+                                        <input asp-for="@Model.Products[i].id" type="hidden" class="form-control" />
+                                    </td>
+                                    <td>
+                                        <img src="@Url.Content(Model.Products[i].ImageURL)" width="100" height="100" />
+                                        <input asp-for="@Model.Products[i].ImageURL" type="hidden" class="form-control" />
+                                    </td>
+                                    <td>
+                                        @Model.Products[i].Name
+                                        <input asp-for="@Model.Products[i].Name" type="hidden" class="form-control" />
+                                    </td>
+                                    <td>
+                                        @Model.Products[i].Category.Name
+                                        <input asp-for="@Model.Products[i].CategoryId" type="hidden" class="form-control" />
+                                    </td>
+                                    <td>
+                                        <input asp-for="@Model.Products[i].Description" class="form-control" />
+                                    </td>
+                                    <td>
+                                        <input type="number" name="ItemCount" value="0"/>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>*@
+
+                    <hr />
                     <div class="form-group">
                         <input type="submit" value="Create" class="btn btn-primary" />
                     </div>
@@ -48,9 +136,9 @@
         </div>
 
         <div>
-            <a asp-action="Profile">Back to List</a>
+            <a asp-action="Profile">Back to Profile</a>
         </div>
-
+        <br />
     </div>
 
 </section>

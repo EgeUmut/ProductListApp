@@ -1,0 +1,134 @@
+﻿@model ProductListApp.Models.ShoppingList
+
+@{
+    ViewData["Title"] = "ListDetailsShopping";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        $.noConflict();
+        $('#myTable').DataTable();
+    });
+
+</script>
+
+<section id="inner-headline">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <ul class="breadcrumb">
+                    <li><a href="/Home/Index"><i class="fa fa-home"></i></a><i class="icon-angle-right"></i></li>
+                    <li class="active">Home/List Details</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="featured">
+    <!-- start slider -->
+    <div class="container">
+
+
+        <div>
+            <br /><br />
+            <h4>ShoppingList</h4>
+            <hr />
+            <dl class="row">
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.Name)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.Name)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.User)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.User.FullName)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.Description)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.Description)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.CreateDate)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.CreateDate)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.ShoppingEndDate)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.ShoppingEndDate)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.ShoppingStartDate)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.ShoppingStartDate)
+                </dd>
+            </dl>
+        </div>
+        <hr />
+        <h2>List</h2>
+        <hr />
+        <table id="myTable" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>ItemCount</th>
+                    <th>Button</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.Carts.Count; i++)
+                {
+                    <tr>
+
+
+                        <td>
+                            <img src="@Url.Content(Model.Carts[i].product.ImageURL)" width="100" height="100" />
+                            @*<input type="hidden" name="@Model[i].product.ImageURL" value="@Model[i].product.ImageURL" />*@
+                        </td>
+                        <td>
+                            @Model.Carts[i].product.Name
+                        </td>
+                        <td>
+                            @Model.Carts[i].product.Category.Name
+                        </td>
+                        <td>
+                            @Html.Raw(Model.Carts[i].Description)
+                        </td>
+                        <td>
+                            @Model.Carts[i].ItemCount
+                        </td>
+                        <td>
+                            @if (@Model.Carts[i].ItemCount > 1)
+                            {
+                                <a href="/Home/LowerItemCount/@Model.Carts[i].ProductId/@Model.id" class="btn btn-theme btn-lg">Lower Count</a>
+                                <br> <br />
+                            }
+                            <a href="/Home/RemoveProduct/@Model.Carts[i].ProductId/@Model.id" class="btn btn-theme btn-lg">Remove</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <hr />
+        <div>
+            <a href="/Home/DeleteList/@Model.id">Delete List</a> ||
+            <a asp-action="Profile">Back to Profile</a>
+        </div>
+        <br /><br />
+
+    </div>
+
+</section>

@@ -19,29 +19,49 @@
     </div>
 </section>
 
+@{
+    var newShoppingLists = Model.Where(p => p.ShoppingStart == false && p.ShoppingEnd == false).ToList();
+}
+
 <section id="featured">
     <!-- start slider -->
     <div class="container">
+        <br />
         <a href="/Home/CreateShoppingList">Create new Shopping Lists</a>
         <div class="row">
             <div class="col-lg-12">
                 <h4 class="heading">My Shopping Lists</h4>
+                @if (TempData["DeleteMessage"] != null)
+                {
+                    <h3 class="alert alert-success">@TempData["DeleteMessage"]</h3>
+                }
+
                 <div class="row">
                     <section id="projects">
                         <ul id="thumbs" class="portfolio">
                             <!-- Item Project and Filter Name -->
-                            @foreach (var item in Model)
+                            @foreach (var item in newShoppingLists)
                             {
                                 <li class="col-lg-3 design" data-id="id-0" data-type="web">
                                     <div class="item-thumbs">
                                         <!-- Fancybox - Gallery Enabled - Title - Full Image -->
-                                        <a class="hover-wrap fancybox" data-fancybox-group="gallery" title="deneme" href="/Home/EditShoppingList/@item.id">
+                                        <a class="hover-wrap fancybox" data-fancybox-group="gallery" title="@item.Name" href="/Home/EditShoppingList/@item.id">
                                             <span class="overlay-img"></span>
                                             <span class="overlay-img-thumb font-icon-plus"></span>
                                         </a>
                                         <!-- Thumb Image and Description -->
                                         <img src=" /SiteLayout/img/works/1.jpg" alt="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus quis elementum odio. Curabitur pellentesque, dolor vel pharetra mollis.">
                                     </div>
+                                    @{
+                                        string Name = item.Name;
+                                        string trimmedName = Name.Length > 20 ? Name.Substring(0, 20) + "..." : Name;
+                                    }
+                                    <hr>
+                                    <p class="btn btn-theme btn-lg">List Name: @trimmedName</p> <br> <br>
+                                    <a href="/Home/DeleteList/@item.id">Delete List</a> <br>
+                                    <a href="/Home/AddNewProducts/@item.id">Edit List</a> <br>
+                                    <a href="/Home/StartShopping/@item.id">Start Shopping</a>
+                                    <hr>
                                 </li>
                             }
 
@@ -52,11 +72,104 @@
             </div>
         </div>
 
+        <br />
+        <hr />
+        <br />
+        @{
+            var shoppinglist = Model.Where(p => p.ShoppingStart == true && p.ShoppingEnd == false).ToList();
+        }
+        @if (shoppinglist.Count > 0)
+        {
+            <div class="row">
+                <div class="col-lg-12">
+                    <h4 class="heading">My Active Shopping Lists</h4>
+                    <div class="row">
+                        <section id="projects">
+                            <ul id="thumbs" class="portfolio">
+                                <!-- Item Project and Filter Name -->
+                                @foreach (var item in shoppinglist)
+                                {
+                                    <li class="col-lg-3 design" data-id="id-0" data-type="web">
+                                        <div class="item-thumbs">
+                                            <!-- Fancybox - Gallery Enabled - Title - Full Image -->
+                                            <a class="hover-wrap fancybox" data-fancybox-group="gallery" title="@item.Name" href="/Home/ListDetailsShopping/@item.id">
+                                                <span class="overlay-img"></span>
+                                                <span class="overlay-img-thumb font-icon-plus"></span>
+                                            </a>
+                                            <!-- Thumb Image and Description -->
+                                            <img src=" /SiteLayout/img/works/1.jpg" alt="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus quis elementum odio. Curabitur pellentesque, dolor vel pharetra mollis.">
+                                        </div>
+                                        @{
+                                            string Name = item.Name;
+                                            string trimmedName = Name.Length > 20 ? Name.Substring(0, 20) + "..." : Name;
+                                        }
+                                        <hr>
+                                        <p class="btn btn-theme btn-lg">List Name: @trimmedName</p> <br> <br>
+                                        <a href="/Home/DeleteList/@item.id">Delete List</a> <br>
+                                        <a href="/Home/ListDetailsShopping/@item.id">List Details</a><br>
+                                        <a href="/Home/FinishShopping/@item.id">Finish Shopping</a>
+                                    </li>
+                                }
+
+                                <!-- End Item Project -->
+                            </ul>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <br />
+        <hr />
+        <br />
+        @{
+            var finishedShoppingLists = Model.Where(p => p.ShoppingEnd == true).ToList();
+        }
+        @if (finishedShoppingLists.Count > 0)
+        {
+            <div class="row">
+                <div class="col-lg-12">
+                    <h4 class="heading">Finished Shopping Lists</h4>
+                    <div class="row">
+                        <section id="projects">
+                            <ul id="thumbs" class="portfolio">
+                                <!-- Item Project and Filter Name -->
+                                @foreach (var item in finishedShoppingLists)
+                                {
+                                    <li class="col-lg-3 design" data-id="id-0" data-type="web">
+                                        <div class="item-thumbs">
+                                            <!-- Fancybox - Gallery Enabled - Title - Full Image -->
+                                            <a class="hover-wrap fancybox" data-fancybox-group="gallery" title="@item.Name" href="/Home/ListDetailsShopping/@item.id">
+                                                <span class="overlay-img"></span>
+                                                <span class="overlay-img-thumb font-icon-plus"></span>
+                                            </a>
+                                            <!-- Thumb Image and Description -->
+                                            <img src=" /SiteLayout/img/works/1.jpg" alt="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus quis elementum odio. Curabitur pellentesque, dolor vel pharetra mollis.">
+                                        </div>
+                                        @{
+                                            string Name = item.Name;
+                                            string trimmedName = Name.Length > 20 ? Name.Substring(0, 20) + "..." : Name;
+                                        }
+                                        <hr>
+                                        <p class="btn btn-theme btn-lg">List Name: @trimmedName</p> <br> <br>
+                                        <a href="/Home/DeleteList/@item.id">Delete List</a> <br>
+                                        <a href="/Home/ListDetailsShopping/@item.id">List Details</a><br>
+                                        <a href="/Home/ReUseList/@item.id">Create this list as new</a>
+                                    </li>
+                                }
+
+                                <!-- End Item Project -->
+                            </ul>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 
 </section>
 
 
 
-@ViewBag.Deneme
-@ViewBag.deneme2
+@*@ViewBag.Deneme
+@ViewBag.deneme2*@

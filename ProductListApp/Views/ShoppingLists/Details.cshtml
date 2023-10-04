@@ -5,17 +5,25 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
+<script>
+    $(document).ready(function () {
+        $.noConflict();
+        $('#myTable').DataTable();
+    });
+
+</script>
+
 <h1>Details</h1>
 
 <div>
     <h4>ShoppingList</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.User)
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.User.Password)
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.User.Email)
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Name)
@@ -23,32 +31,82 @@
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Name)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Description)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Description)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.CreateDate)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.CreateDate)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.ShoppingStartDate)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.ShoppingStartDate)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.ShoppingEndDate)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.ShoppingEndDate)
         </dd>
     </dl>
 </div>
+
+<hr />
+<h2>Product List</h2>
+<hr />
+<table id="myTable" class="table table-striped">
+    <thead>
+        <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>ItemCount</th>
+            <th>Button</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (var i = 0; i < Model.Carts.Count; i++)
+        {
+            <tr>
+
+
+                <td>
+                    <img src="@Url.Content(Model.Carts[i].product.ImageURL)" width="100" height="100" />
+                    @*<input type="hidden" name="@Model[i].product.ImageURL" value="@Model[i].product.ImageURL" />*@
+                </td>
+                <td>
+                    @Model.Carts[i].product.Name
+                </td>
+                <td>
+                    @Model.Carts[i].product.Category.Name
+                </td>
+                <td>
+                    @Html.Raw(Model.Carts[i].Description)
+                </td>
+                <td>
+                    @Model.Carts[i].ItemCount
+                </td>
+                <td>
+                    @if (@Model.Carts[i].ItemCount > 1)
+                    {
+                        <a href="/Home/LowerItemCount/@Model.Carts[i].ProductId/@Model.id" class="btn btn-theme btn-lg">Lower Count</a>
+                        <br> <br />
+                    }
+                    <a href="/Home/RemoveProduct/@Model.Carts[i].ProductId/@Model.id" class="btn btn-theme btn-lg">Remove</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<hr />
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.id">Edit</a> |
     <a asp-action="Index">Back to List</a>

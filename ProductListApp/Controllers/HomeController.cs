@@ -35,7 +35,7 @@ namespace ProductListApp.Controllers
             return View();
         }
 
-        
+
         public IActionResult AboutUs()
         {
             string aboutUs = _context.AboutUs.Select(p => p.Description).FirstOrDefault();
@@ -53,116 +53,424 @@ namespace ProductListApp.Controllers
         [Authorize]
         public IActionResult Profile()
         {
-			var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // deneme
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // deneme
+            int userIntId = int.Parse(userId);
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value.ToString(); //deneme
 
-            int userIntId = int.Parse(userId);
 
-            var list = _context.ShoppingLists.Where(p=>p.UserId == userIntId).ToList();
-			
+
+            var list = _context.ShoppingLists.Where(p => p.UserId == userIntId).ToList();
+
             return View(list);
-		}
+        }
 
         [HttpGet]
         public IActionResult CreateShoppingList()
         {
-            return View();
+            var model = new ShoppingList();
+            model.Products = _context.Products.Include(p => p.Category).ToList();
+            return View(model);
         }
 
         [HttpPost]
-        public IActionResult CreateShoppingList(ShoppingList shoppingList)
+        public IActionResult CreateShoppingList(ShoppingList shoppingList, List<Cart> carts, int[] SelectedProducts)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // deneme
-            int userIntId = int.Parse(userId);
-            var user = _context.Users.Find(userIntId);
-
-            ShoppingList list = new ShoppingList()
+            if (ModelState.IsValid)
             {
-                Name = shoppingList.Name,
-                UserId = userIntId,
-                Description = shoppingList.Description,
-                CreateDate = DateTime.Now,
-                User = user,
+                try
+                {
+                    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // deneme
+                    int userIntId = int.Parse(userId);
+                    shoppingList.UserId = userIntId;
 
-            };
+                    if (SelectedProducts != null && SelectedProducts.Length > 0)
+                    {
+                        foreach (var productId in SelectedProducts)
+                        {
+                            var product = _context.Products.FirstOrDefault(c => c.id == productId);
+                            if (product != null)
+                            {
+                                carts.Add(new Cart
+                                {
+                                    product = product,
+                                    ProductId = product.id,
+                                    ItemCount = 0,
+                                    shoppingList = shoppingList,
+                                    ShoppingListId = shoppingList.id
+                                });
+                            }
+                        }
+                    }
+                    shoppingList.Carts = carts;
+                    shoppingList.ShoppingStart = false;
+                    shoppingList.ShoppingEnd = false;
+                    shoppingList.CreateDate = DateTime.Now;
 
-            _context.ShoppingLists.Add(list);
-            _context.SaveChanges();
+                    _context.ShoppingLists.Add(shoppingList);
+                    _context.SaveChanges();
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+
+            }
 
             return RedirectToAction("Profile", "Home");
         }
 
         [HttpGet]
-        public IActionResult EditShoppingList(int? id)
+        public IActionResult AddNewProducts(int id)
         {
-            if (id == null || _context.ShoppingLists == null)
+            var model = _context.ShoppingLists.Include(p=>p.Carts).Where(p=>p.id == id).FirstOrDefault();
+
+            if (model == null)
             {
                 return NotFound();
             }
 
-            var shoppingList =  _context.ShoppingLists.Include(p=>p.Products).Where(p=>p.id == id).SingleOrDefault();
+            List<int> SelectedProducts = model.Carts.Select(p=>p.ProductId).ToList();
+            ViewBag.SelectedProducts = SelectedProducts;
+            ViewBag.AllProducts = _context.Products.Include(p=>p.Category).ToList();
 
-            var AllProducts = _context.Products.Include(p=>p.Category).ToList();
-            List<Product> ShoppingListProducts = shoppingList.Products.Where(p=>p.ItemCount > 0).ToList();
-
-            foreach (var product in AllProducts)
-            {
-                foreach (var item in ShoppingListProducts)
-                {
-                    if (product.id == item.id)
-                    {
-                        product.ItemCount = item.ItemCount;
-                    }
-                }
-            }
-            
-            if (shoppingList == null)
-            {
-                return NotFound();
-            }
-            ViewBag.ShoppingListId = shoppingList.id;
-            return View(AllProducts);
+            return View(model);
         }
 
         [HttpPost]
-        public IActionResult EditShoppingList(int ListId, List<Product> products)
+        public IActionResult AddNewProducts(int id,ShoppingList shoppingList, int[] SelectedProducts)
         {
-            //var AllProducts = _context.Products.Include(P=>P.Category).ToList();
-            //List<Product> tmpList = new List<Product>();
-            //List<Product> tmpList2 = new List<Product>();
+            try
+            {
+                //var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // deneme
+                //int userIntId = int.Parse(userId);
 
-            //foreach (var item in AllProducts)
-            //{
-            //    foreach (var list in products)
-            //    {
-            //        if (item.id == list.id)
-            //        {
-            //            tmpList.Add(item);
-            //            var model = tmpList.Where(p => p.id == list.id).SingleOrDefault();
-            //            model.Description = list.Description;
-            //            model.ItemCount = list.ItemCount;
-            //            tmpList2.Add(model);
-            //        }
-            //    }
-            //}
+                var existingShoppingList = _context.ShoppingLists.Include(p=>p.Carts).Where(p=>p.id == id).SingleOrDefault();
+
+                if (existingShoppingList == null)
+                {
+                    return NotFound();
+                }
+
+                existingShoppingList.Name = shoppingList.Name;
+                existingShoppingList.Description = shoppingList.Description;
 
 
-            var ShoppingList = _context.ShoppingLists.Find(ListId);
-            ShoppingList.Products = products;
-            //tmpList2 = _context.Products.ToList();
-            _context.SaveChanges();
+                var SelectedProductsIds = SelectedProducts ?? new int[0];
 
-            return RedirectToAction("Profile","Home");
+                var newProducts = _context.Products.Where(c => SelectedProductsIds.Contains(c.id)).ToList();
+
+
+                existingShoppingList.Carts.Clear();
+
+                foreach (var item in newProducts)
+                {
+                    existingShoppingList.Carts.Add(new Cart{
+                        
+                        ItemCount = 0,
+                        ProductId = item.id,
+                        product = item,                       
+                    
+                    });;
+                }
+                var asd = existingShoppingList;
+
+                _context.SaveChanges();
+                //var newProducts = _context.Products.Where(p => SelectedProductsIds.Contains(c.id)).toList();
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+
+            return RedirectToAction("Profile", "Home");
+        }
+        [HttpGet]
+        public IActionResult DeleteList(int id)
+        {
+            var list = _context.ShoppingLists.Where(p => p.id == id).SingleOrDefault();
+
+            if (list != null)
+            {
+                _context.ShoppingLists.Remove(list);
+                _context.SaveChanges();
+                TempData["DeleteMessage"] = "Shopping List successfully Deleted";
+                return RedirectToAction("Profile", "Home");
+
+            }
+
+            TempData["DeleteMessage"] = "There was an error while deleting your shopping list";
+
+            return RedirectToAction("Profile", "Home");
         }
 
-            [HttpGet]
+        [HttpGet]
+        public IActionResult StartShopping(int id)
+        {
+            var list = _context.ShoppingLists.Where(p => p.id == id).SingleOrDefault();
+
+            if (list != null)
+            {
+                list.ShoppingStart = true;
+                list.ShoppingStartDate = DateTime.Now;
+
+                _context.SaveChanges();
+                TempData["DeleteMessage"] = "Shopping Started for List: " +list.Name;
+                return RedirectToAction("Profile", "Home");
+            }
+            return RedirectToAction("Profile", "Home");
+        }
+
+        [HttpGet]
+        public IActionResult FinishShopping(int id)
+        {
+            var list = _context.ShoppingLists.Where(p => p.id == id).SingleOrDefault();
+
+            if (list != null)
+            {
+                list.ShoppingEnd = true;
+                list.ShoppingEndDate = DateTime.Now;
+
+                _context.SaveChanges();
+                TempData["DeleteMessage"] = "Shopping Finished for List: " + list.Name;
+                return RedirectToAction("Profile", "Home");
+            }
+            return RedirectToAction("Profile", "Home");
+        }
+
+        [HttpGet]
+        public IActionResult ListDetailsShopping(int id)
+        {
+            var list = _context.ShoppingLists.Where(p => p.id == id).SingleOrDefault();
+            var carts = _context.Carts.Include(p=>p.product).Include(p=>p.product.Category).Where(p=>p.ShoppingListId == id).ToList();
+            
+            if (list != null)
+            {
+                list.Carts = carts;
+
+                return View(list);
+            }
+
+            TempData["DeleteMessage"] = "Couldn't find the list";
+
+            return RedirectToAction("Profile", "Home");
+        }
+
+        [HttpGet]
+        public IActionResult ReUseList(int id)
+        {
+            var list = _context.ShoppingLists.Where(p => p.id == id).SingleOrDefault();
+
+            if (list != null)
+            {
+                
+                list.ShoppingStart = false;
+                list.ShoppingStartDate = null;
+                list.ShoppingEnd = false;
+                list.ShoppingEndDate = null;
+
+                _context.SaveChanges();
+                TempData["DeleteMessage"] = "You can use list : " + list.Name + " Again ";
+                return RedirectToAction("Profile", "Home");
+            }
+            return RedirectToAction("Profile", "Home");
+        }
+
+        [HttpGet]
+        [Route("Home/RemoveProduct/{productId:int}/{shoppingListId:int}")]
+        public IActionResult RemoveProduct(int productId, int shoppingListId)
+        {
+            var list = _context.ShoppingLists.Where(p => p.id == shoppingListId).SingleOrDefault();
+            var carts = _context.Carts.Include(p => p.product).Include(p=>p.product.Category).Where(p => p.ShoppingListId == shoppingListId).ToList();
+
+            var product = carts.Where(p => p.ProductId == productId).SingleOrDefault();
+            carts.Remove(product);
+            list.Carts = carts;
+
+            _context.SaveChanges();
+
+            return View("ListDetailsShopping", list);
+        }
+
+        [HttpGet]
+        [Route("Home/LowerItemCount/{productId:int}/{shoppingListId:int}")]
+        public IActionResult LowerItemCount(int productId, int shoppingListId)
+        {
+            var list = _context.ShoppingLists.Where(p => p.id == shoppingListId).SingleOrDefault();
+            var carts = _context.Carts.Include(p => p.product).Include(p => p.product.Category).Where(p => p.ShoppingListId == shoppingListId).ToList();
+
+            var product = carts.Where(p => p.ProductId == productId).SingleOrDefault();
+            product.ItemCount -= 1;
+
+            list.Carts = carts;
+
+            _context.SaveChanges();
+
+            return View("ListDetailsShopping", list);
+        }
+
+
+
+
+
+
+
+
+
+        //[HttpPost]
+        //public IActionResult CreateShoppingList(ShoppingList shoppingList , List<Product> products)
+        //{
+        //    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // deneme
+        //    int userIntId = int.Parse(userId);
+        //    var user = _context.Users.Find(userIntId);
+
+        //    shoppingList.CreateDate = DateTime.Now;
+        //    shoppingList.UserId = userIntId;
+
+        //    shoppingList.Products = null;
+        //    foreach (var item in products)
+        //    {
+        //        if (item.ItemCount > 0)
+        //        {
+        //            shoppingList.Products.Add(item);
+        //        }
+        //    }
+
+        //    _context.ShoppingLists.Add(shoppingList);
+        //    _context.SaveChanges();
+
+        //    return RedirectToAction("Profile", "Home");
+        //}
+
+
+
+
+        // Alışveriş listesi düzenlemek için GET metodu
+        public async Task<IActionResult> EditShoppingList(int? id)
+        {
+
+
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var cart = _context.Carts.Include(p=>p.product).Where(p=>p.ShoppingListId == id).ToList();
+
+
+            //var shoppingList = await _context.ShoppingLists
+            //    .Include(s => s.Carts).Include(p=>p.Products).Include(p=>p)
+            //    .FirstOrDefaultAsync(s => s.id == id);
+
+            if (cart == null)
+            {
+                return NotFound();
+            }
+
+            //var productList = _context.Products.ToList();
+            ViewBag.ShoppingListId = id;
+            ViewBag.ListName = _context.ShoppingLists.Where(p=>p.id == id)
+                .Select(p => new { Name = p.Name, Description = p.Description })
+                .FirstOrDefault();
+            return View(cart);
+        }
+
+        // Alışveriş listesi düzenlemek için POST metodu
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditShoppingList(int ShoppingListId, List<Cart> carts)
+        {
+
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var shoppingList = _context.ShoppingLists.Include(p=>p.Carts).Where(p => p.id == ShoppingListId).SingleOrDefault();
+
+                    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // deneme
+                    int userIntId = int.Parse(userId);
+                    shoppingList.UserId = userIntId;
+
+                    //shoppingList.Carts = carts;
+
+                    shoppingList.Carts.Clear();
+
+                    foreach (var cart in carts)
+                    {
+                        shoppingList.Carts.Add(cart); // Yeni Cart nesnelerini ekle
+                    }
+
+                    //_context.Update(shoppingList);
+                    _context.SaveChanges();
+
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+
+                    throw;
+
+                }
+
+                var deneme = _context.Carts.Where(p => p.ShoppingListId == ShoppingListId).ToList();
+                return RedirectToAction("Profile", "Home");
+            }
+            return View();
+        }
+
+        private bool ShoppingListExists(int id)
+        {
+            return _context.ShoppingLists.Any(e => e.id == id);
+        }
+
+
+        //çok eski
+
+        //// GET metodu, düzenlenecek ShoppingList ve Product listesini görüntüler
+        //[HttpGet]
+        //public IActionResult EditShoppingList(int id)
+        //{
+        //    var shoppingList = _context.ShoppingLists
+        //        .Include(sl => sl.Products) // ShoppingList içindeki Products'ı al
+        //        .FirstOrDefault(sl => sl.id == id);
+
+        //    if (shoppingList == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    ViewBag.ShoppingListId = 3;
+        //    return View(shoppingList.Products); // ShoppingList ve içindeki Products'ları view'a gönder
+        //}
+
+        //// POST metodu, düzenlenmiş ShoppingList ve Product listesini kaydeder
+        //[HttpPost]
+        //public IActionResult EditShoppingList(int ListId,List<Product> products)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        // editedShoppingList içindeki değişiklikleri _context ile veritabanına kaydet
+        //        var list = _context.ShoppingLists.Find(ListId);
+        //        list.Products = products;
+        //        _context.SaveChanges();
+
+        //        return RedirectToAction("Profile","Home"); // Başka bir sayfaya yönlendir
+        //    }
+
+        //    // Geçersiz model durumunda, sayfayı tekrar göster
+        //    return View(products);
+        //}
+
+        [HttpGet]
         public IActionResult Contact()
         {
             var item = _context.Contacts.FirstOrDefault();
-            if ( item.Description == null)
+            if (item.Description == null)
             {
                 item.Description = "Under Maintenance";
-			}
+            }
             return View(item);
         }
         [HttpPost]
@@ -175,22 +483,22 @@ namespace ProductListApp.Controllers
                 _context.Messages.Add(message);
                 _context.SaveChanges();
 
-                ViewBag.Message = "Your message has been sent!";
+				TempData["Message"] = "Your message has been sent!";
 
-                return RedirectToAction("Contact","Home");
+                return RedirectToAction("Contact", "Home");
             }
-            ViewBag.Message = "An error occurred while sending your message.";
+			TempData["Message"] = "An error occurred while sending your message.";
 
-			var item = _context.Contacts.FirstOrDefault();
-			if (item.Description == null)
-			{
-				item.Description = "Under Maintenance";
-			}
-			return View(item);
+            var item = _context.Contacts.FirstOrDefault();
+            if (item.Description == null)
+            {
+                item.Description = "Under Maintenance";
+            }
+            return View(item);
         }
 
 
-		public IActionResult Privacy()
+        public IActionResult Privacy()
         {
             return View();
         }

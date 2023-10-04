@@ -34,6 +34,16 @@ namespace ProductListApp.Controllers
                 return NotFound();
             }
 
+            var list = _context.ShoppingLists.Include(p=>p.User).Where(p => p.id == id).SingleOrDefault();
+            var carts = _context.Carts.Include(p => p.product).Include(p => p.product.Category).Where(p => p.ShoppingListId == id).ToList();
+
+            if (list != null)
+            {
+                list.Carts = carts;
+
+                return View(list);
+            }
+
             var shoppingList = await _context.ShoppingLists
                 .Include(s => s.User)
                 .FirstOrDefaultAsync(m => m.id == id);

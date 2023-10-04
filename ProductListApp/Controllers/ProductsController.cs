@@ -151,7 +151,7 @@ namespace ProductListApp.Controllers
                     ExistingProduct.Name = product.Name;
                     ExistingProduct.Description = product.Description;
                     ExistingProduct.CategoryId = product.CategoryId;
-                    ExistingProduct.ItemCount = product.ItemCount;
+                    //ExistingProduct.ItemCount = product.ItemCount;
 
                     await _context.SaveChangesAsync();
                 }

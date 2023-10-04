@@ -5,12 +5,20 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
+<script>
+    $(document).ready(function () {
+        $.noConflict();
+        $('#myTable').DataTable();
+    });
+
+</script>
+
 <h1>Index</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
-<table class="table">
+<table id="myTable" class="table">
     <thead>
         <tr>
             <th>
@@ -21,9 +29,18 @@
     </thead>
     <tbody>
 @foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.Raw(item.Description)
+            <tr>
+                <td>
+                    @{
+                        var truncatedDescription = item.Description;
+                        if (item.Description.Length > 200)
+                    {
+                    // Açıklama 200 karakterden uzunsa, sonuna üç nokta ekleyin
+                            truncatedDescription = truncatedDescription.Substring(0, 200) + "...";
+                    }
+                    
+                    @Html.Raw(truncatedDescription)
+                    }
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

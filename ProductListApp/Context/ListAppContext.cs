@@ -21,7 +21,27 @@ namespace ProductListApp.Context
         public DbSet<ShoppingList> ShoppingLists { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Contact> Contacts { get; set; }
+        public DbSet<Cart> Carts { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+
+            // Tablo ve ilişki tanımlamalarını burada yapabilirsiniz
+
+            // Product ve Category arasında bir ilişki tanımlama
+            modelBuilder.Entity<ShoppingList>()
+            .HasMany(p => p.Products) // shoppingLists, birden çok Products'ye sahip olabilir
+            .WithMany(c => c.shoppingLists) // Products, birden çok shoppingLists'e sahip olabilir
+            .UsingEntity(j => j.ToTable("ProductShoppingList")); // ProductShoppingList adında bir ilişki tablosu oluştur
+
+            modelBuilder.Entity<ShoppingList>()
+            .HasMany(p => p.Carts) // shoppingLists, birden çok Products'ye sahip olabilir
+            .WithOne(c => c.shoppingList) // Products, birden çok shoppingLists'e sahip olabilir
+            .HasForeignKey(p=>p.ShoppingListId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+
+        }
 
     }
 }
